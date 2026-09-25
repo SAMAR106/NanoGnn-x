@@ -57,3 +57,5 @@ frontend/.env.production
 
 # Note: checkpoints/ (ONNX model) is intentionally committed
 # so reviewers can run inference without retraining.
+# Large PyTorch Lightning .ckpt files are excluded (use ONNX for inference).
+*.ckpt
