@@ -137,8 +137,9 @@ def cif_to_graph(
     cif_path: str, y: torch.Tensor | None = None, r_cut: float | None = None
 ) -> CrystalData:
     """Loads a single .cif file and converts it into a `CrystalData` graph."""
-    from pymatgen.core import Structure  # lazy: see the TYPE_CHECKING note above
     import warnings
+
+    from pymatgen.core import Structure  # lazy: see the TYPE_CHECKING note above
 
     r_cut = r_cut or CFG.r_cut
     with warnings.catch_warnings():

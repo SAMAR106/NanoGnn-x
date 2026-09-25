@@ -273,41 +273,43 @@ async def explain(file: UploadFile = File(...)):
     try:
         contents = await _read_upload_capped(file)
         graph = _cif_bytes_to_graph(contents, filename)
-        
+
         base_batch = Batch.from_data_list([graph])
         base_pred = np.asarray(_get_engine().predict(build_feed_dict(base_batch))).reshape(1, -1)
-        base_pred = _predictions_to_physical_units(base_pred)[0] 
-        
+        base_pred = _predictions_to_physical_units(base_pred)[0]
+
         num_atoms = graph.num_nodes
         contributions = []
-        
+
         # Ablation: zero out each atom's Z embedding one by one
         for i in range(num_atoms):
             z_ablated = graph.x.clone()
             z_ablated[i] = 0  # Dummy empty element
-            
+
             ablated_graph = graph.clone()
             ablated_graph.x = z_ablated
-            
+
             batch = Batch.from_data_list([ablated_graph])
             pred = np.asarray(_get_engine().predict(build_feed_dict(batch))).reshape(1, -1)
             pred = _predictions_to_physical_units(pred)[0]
-            
+
             # Absolute difference in bandgap prediction
-            diff = np.abs(base_pred[0] - pred[0]) 
+            diff = np.abs(base_pred[0] - pred[0])
             contributions.append(float(diff))
-            
+
         max_c = max(contributions) if contributions and max(contributions) > 0 else 1.0
         normalized_heatmap = [c / max_c for c in contributions]
-        
+
         max_idx = int(np.argmax(contributions)) if contributions else 0
-        
+
+        import os
+        import tempfile
+
         from pymatgen.core import Structure
-        import tempfile, os
         with tempfile.NamedTemporaryFile(suffix=".cif", delete=False) as tmp:
             tmp.write(contents)
             tmp_path = tmp.name
-            
+
         key_element = "Unknown"
         try:
             with warnings.catch_warnings():
@@ -317,9 +319,12 @@ async def explain(file: UploadFile = File(...)):
         finally:
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
-                
-        justification = f"The model's prediction is strongly driven by the {key_element} atoms (highlighted in red) in this geometry."
-        
+
+        justification = (
+            f"The model's prediction is strongly driven by the {key_element} "
+            "atoms (highlighted in red) in this geometry."
+        )
+
         return {
             "heatmap": normalized_heatmap,
             "justification": justification
@@ -335,10 +340,11 @@ def get_dataset(limit: int = 500):
     try:
         csv_path = os.path.join(CFG.raw_cif_dir, "targets.csv")
         if os.path.exists(csv_path):
-            with open(csv_path, 'r', encoding='utf-8') as f:
+            with open(csv_path, encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for i, row in enumerate(reader):
-                    if i >= limit: break
+                    if i >= limit:
+                        break
                     results.append(row)
     except Exception as e:
         logger.warning("Could not read targets.csv: %s", e)
