@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual Environments
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+lightning_logs/
+firebase-debug.log
+
+# Training artifacts (large binary files)
+*.pt
+*.pth
+lightning_logs/
+
+# Data (too large for git)
+data/raw_cifs/
+data/processed/
+
+# Frontend build artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.production
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Media files uploaded during dev
+*.jpeg
+*.jpg
+*.png
+*.pdf
+
+# Note: checkpoints/ (ONNX model) is intentionally committed
+# so reviewers can run inference without retraining.

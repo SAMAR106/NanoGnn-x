@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install CPU-only dependencies
+        run: |
+          pip install --upgrade pip
+          # CI runs on CPU-only runners -- install everything needed to
+          # exercise the actual code paths (model, dataset, ONNX export)
+          # without the GPU-only tensorrt/pycuda packages, which aren't
+          # installable here and aren't exercised by the test suite.
+          # TensorRT's execution path is implemented (see api/engine.py)
+          # but genuinely requires real GPU hardware to validate --
+          # run scripts/validate_tensorrt.py yourself on a GPU machine;
+          # see the README's TensorRT section.
+          pip install torch torch_geometric pytorch-lightning pymatgen \
+                      onnx onnxscript onnxruntime numpy scipy pandas pytest \
+                      fastapi "uvicorn[standard]" python-multipart httpx \
+                      ruff mypy
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Type check (mypy)
+        # Unlike the pre-commit hook, CI already has torch installed for
+        # the test step above, so this gets the fuller check with real
+        # tensor stubs available, at no extra multi-GB download cost.
+        run: mypy api/ src/ train.py
+
+      - name: Run test suite
+        run: pytest tests/ -v

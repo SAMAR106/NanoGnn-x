@@ -1,0 +1,20 @@
+# Keep the production image lean: the serving path (api/, src/, train.py,
+# the real checkpoint) needs to be in the image; the rest doesn't.
+.git/
+.github/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pre-commit-config.yaml
+lightning_logs/
+tests/
+scripts/
+README.md
+
+# Not excluding data/raw_cifs/ or checkpoints/ -- the bundled dataset and
+# the real trained checkpoint are legitimate parts of what this image
+# serves (see README's "Results" section). Exclude them yourself here if
+# you're deploying with a different/larger dataset and don't want the
+# demo data baked into your image.

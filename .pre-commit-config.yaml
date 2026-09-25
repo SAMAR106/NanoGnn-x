@@ -1,0 +1,47 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.8
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+      - id: mypy
+        files: ^(api|src)/.*\.py$|^train\.py$
+        # Deliberately scoped to api/, src/, and train.py -- not
+        # tests/ or scripts/, which lean on dynamic mocking
+        # (unittest.mock, monkeypatch) and third-party test fixtures
+        # in ways that generate a lot of mypy noise with little real
+        # signal. The actual application code is where type errors
+        # matter most; see pyproject.toml's [tool.mypy] section for
+        # the rest of the config this hook shares with running mypy
+        # by hand.
+        #
+        # No `additional_dependencies: [torch, ...]` here on purpose --
+        # tried it, and pre-commit installing a full torch+CUDA stack
+        # into an isolated venv is a multi-GB download that genuinely
+        # exhausted disk space in a constrained environment while
+        # building this repo. Without torch's stubs, tensor-typed code
+        # checks as `Any` in the fast pre-commit pass -- looser, but
+        # every contributor's first commit doesn't need a multi-GB
+        # download. `mypy api/ src/ train.py` in your repo's own
+        # environment (which already has torch installed for real
+        # work) gives you the fuller check; CI runs that too.
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        # 4096 KB, not the tool's 500 KB default: this repo deliberately
+        # ships a real trained checkpoint (checkpoints/nanognn-x-epoch=
+        # 25-val_loss=0.1539.ckpt, ~2.7 MB) and its ONNX export
+        # (~1.0 MB) -- see README's "Results" section. The default
+        # limit would block committing the repo's own real assets.
+        args: [--maxkb=4096]
+      - id: check-merge-conflict

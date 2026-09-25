@@ -1,0 +1,42 @@
+# Pinned with `>=` rather than open-ended `~=` where the major version
+# is stable, so a future patch/minor release upstream doesn't silently
+# change this repo's behavior.  Exact versions this codebase was actually
+# built and tested against (Python 3.13, Windows 11) are noted in each
+# comment for full reproducibility.
+
+# --- Core ML ---
+torch>=2.14.0            # tested: 2.14.0+cpu (Python 3.13, Windows)
+torch_geometric>=2.8.0   # tested: 2.8.0.post1
+pytorch-lightning>=2.6.0 # tested: 2.6.6
+
+# --- Materials science ---
+pymatgen>=2026.5.0       # tested: 2026.9.24
+
+# --- Serving ---
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9
+
+# --- ONNX / hardware acceleration ---
+onnx>=1.17.0             # tested: 1.23.0
+onnxscript>=0.1.0        # tested: 0.7.2 -- needed internally by torch's ONNX exporter
+onnxruntime>=1.20.0      # tested: 1.27.0 (CPU; swap for onnxruntime-gpu to use CUDA)
+
+# tensorrt: OPTIONAL -- only needed for GPU production serving.
+# Install via NVIDIA's package index (not plain PyPI); must match your
+# CUDA/driver version exactly. See:
+# https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html
+# tensorrt>=8.6.1
+# pycuda>=2024.1           # only needed for the raw TensorRT execution path
+
+# --- Utilities ---
+numpy>=1.23.2
+scipy
+pandas
+
+# --- Dev / test (not needed for production serving) ---
+pytest>=9.1.0
+httpx2>=0.1.0            # FastAPI TestClient: httpx deprecated in favour of httpx2
+
+# --- Optional: only needed for scripts/download_materials_project.py ---
+# mp-api>=0.45.0

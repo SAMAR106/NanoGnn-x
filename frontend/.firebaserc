@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "streetbites-c813d"
+  },
+  "targets": {
+    "streetbites-c813d": {
+      "hosting": {
+        "nanognn-x": [
+          "nanognn-x"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

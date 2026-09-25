@@ -1,0 +1,37 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = [
+    # FastAPI's dependency-injection system relies on calling File(),
+    # Header(), Depends() etc. as default argument values -- that's the
+    # framework's actual mechanism, not an accident. Ruff's generic
+    # "no function calls in defaults" rule doesn't know FastAPI's
+    # convention; the FastAPI docs themselves note this rule should be
+    # disabled for FastAPI code.
+    "B008",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# tests/*.py deliberately do `pytest.importorskip("pymatgen")` (etc.)
+# *before* importing modules that transitively depend on it, so a test
+# environment missing an optional heavy dependency skips gracefully
+# instead of crashing at collection time. That import ordering is the
+# point, not an oversight -- E402 would otherwise flag every such file.
+"tests/*.py" = ["E402"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_return_any = false
+warn_unused_configs = true
+# Third-party libraries here (torch_geometric, pymatgen) either ship no
+# type stubs or ship incomplete ones; --ignore-missing-imports keeps
+# mypy from being all-noise-no-signal on every import of them, while
+# still checking our own code's internal type consistency.
